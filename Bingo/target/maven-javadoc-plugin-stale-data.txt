@@ -1,0 +1,65 @@
+@options
+@packages
+-classpath
+'C:/Users/usuario/.m2/repository/org/apache/pdfbox/pdfbox/1.8.10/pdfbox-1.8.10.jar;C:/Users/usuario/.m2/repository/org/apache/pdfbox/fontbox/1.8.10/fontbox-1.8.10.jar;C:/Users/usuario/.m2/repository/org/apache/pdfbox/jempbox/1.8.10/jempbox-1.8.10.jar;C:/Users/usuario/.m2/repository/commons-logging/commons-logging/1.1.1/commons-logging-1.1.1.jar;C:/Users/usuario/.m2/repository/com/itextpdf/io/7.1.18/io-7.1.18.jar;C:/Users/usuario/.m2/repository/org/slf4j/slf4j-api/1.7.30/slf4j-api-1.7.30.jar;C:/Users/usuario/.m2/repository/io/github/bhaskarkh/PdfInvoiceCreator/1.0.1/PdfInvoiceCreator-1.0.1.jar;C:/Users/usuario/.m2/repository/com/itextpdf/itext7-core/7.0.4/itext7-core-7.0.4.pom;C:/Users/usuario/.m2/repository/com/itextpdf/barcodes/7.0.4/barcodes-7.0.4.jar;C:/Users/usuario/.m2/repository/com/itextpdf/font-asian/7.0.4/font-asian-7.0.4.jar;C:/Users/usuario/.m2/repository/com/itextpdf/forms/7.0.4/forms-7.0.4.jar;C:/Users/usuario/.m2/repository/com/itextpdf/hyph/7.0.4/hyph-7.0.4.jar;C:/Users/usuario/.m2/repository/com/itextpdf/kernel/7.0.4/kernel-7.0.4.jar;C:/Users/usuario/.m2/repository/com/itextpdf/layout/7.0.4/layout-7.0.4.jar;C:/Users/usuario/.m2/repository/com/itextpdf/pdfa/7.0.4/pdfa-7.0.4.jar;C:/Users/usuario/.m2/repository/com/itextpdf/sign/7.0.4/sign-7.0.4.jar;C:/Users/usuario/.m2/repository/org/projectlombok/lombok/1.18.24/lombok-1.18.24.jar'
+-encoding
+'UTF-8'
+-protected
+-source
+'20'
+-sourcepath
+'C:/Users/usuario/Documents/NetBeansProjects/Bingo/src/main/java;C:/Users/usuario/Documents/NetBeansProjects/Bingo/target/generated-sources/annotations'
+-author
+-bottom
+'Copyright &#169; 2023. All rights reserved.'
+-charset
+'UTF-8'
+-d
+'C:/Users/usuario/Documents/NetBeansProjects/Bingo/target/apidocs'
+-docencoding
+'UTF-8'
+-doctitle
+'Bingo 1.0-SNAPSHOT API'
+-use
+-version
+-windowtitle
+'Bingo 1.0-SNAPSHOT API'
+proyecto.bingo
+C:\Users\usuario\.m2\repository\org\apache\pdfbox\pdfbox\1.8.10\pdfbox-1.8.10.jar = 1696785005787
+C:\Users\usuario\.m2\repository\org\apache\pdfbox\fontbox\1.8.10\fontbox-1.8.10.jar = 1696785005199
+C:\Users\usuario\.m2\repository\org\apache\pdfbox\jempbox\1.8.10\jempbox-1.8.10.jar = 1696785005016
+C:\Users\usuario\.m2\repository\commons-logging\commons-logging\1.1.1\commons-logging-1.1.1.jar = 1696785005024
+C:\Users\usuario\.m2\repository\com\itextpdf\io\7.1.18\io-7.1.18.jar = 1696789605807
+C:\Users\usuario\.m2\repository\org\slf4j\slf4j-api\1.7.30\slf4j-api-1.7.30.jar = 1696789605925
+C:\Users\usuario\.m2\repository\io\github\bhaskarkh\PdfInvoiceCreator\1.0.1\PdfInvoiceCreator-1.0.1.jar = 1696789643546
+C:\Users\usuario\.m2\repository\com\itextpdf\itext7-core\7.0.4\itext7-core-7.0.4.pom = 1696789641694
+C:\Users\usuario\.m2\repository\com\itextpdf\barcodes\7.0.4\barcodes-7.0.4.jar = 1696789644104
+C:\Users\usuario\.m2\repository\com\itextpdf\font-asian\7.0.4\font-asian-7.0.4.jar = 1696789646414
+C:\Users\usuario\.m2\repository\com\itextpdf\forms\7.0.4\forms-7.0.4.jar = 1696789644006
+C:\Users\usuario\.m2\repository\com\itextpdf\hyph\7.0.4\hyph-7.0.4.jar = 1696789645436
+C:\Users\usuario\.m2\repository\com\itextpdf\kernel\7.0.4\kernel-7.0.4.jar = 1696789645405
+C:\Users\usuario\.m2\repository\com\itextpdf\layout\7.0.4\layout-7.0.4.jar = 1696789644543
+C:\Users\usuario\.m2\repository\com\itextpdf\pdfa\7.0.4\pdfa-7.0.4.jar = 1696789644293
+C:\Users\usuario\.m2\repository\com\itextpdf\sign\7.0.4\sign-7.0.4.jar = 1696789644573
+C:\Users\usuario\.m2\repository\org\projectlombok\lombok\1.18.24\lombok-1.18.24.jar = 1696789646540
+C:\Users\usuario\Documents\NetBeansProjects\Bingo\src\main\java = 1696794668000
+C:\Users\usuario\Documents\NetBeansProjects\Bingo\target\generated-sources\annotations = 1696997297979
+C:\Users\usuario\Documents\NetBeansProjects\Bingo\target\apidocs\allclasses-index.html = 1696997337991
+C:\Users\usuario\Documents\NetBeansProjects\Bingo\target\apidocs\allpackages-index.html = 1696997337999
+C:\Users\usuario\Documents\NetBeansProjects\Bingo\target\apidocs\copy.svg = 1696997338046
+C:\Users\usuario\Documents\NetBeansProjects\Bingo\target\apidocs\element-list = 1696997337878
+C:\Users\usuario\Documents\NetBeansProjects\Bingo\target\apidocs\help-doc.html = 1696997338037
+C:\Users\usuario\Documents\NetBeansProjects\Bingo\target\apidocs\index-all.html = 1696997338020
+C:\Users\usuario\Documents\NetBeansProjects\Bingo\target\apidocs\index.html = 1696997338029
+C:\Users\usuario\Documents\NetBeansProjects\Bingo\target\apidocs\member-search-index.js = 1696997338006
+C:\Users\usuario\Documents\NetBeansProjects\Bingo\target\apidocs\module-search-index.js = 1696997338001
+C:\Users\usuario\Documents\NetBeansProjects\Bingo\target\apidocs\overview-tree.html = 1696997337964
+C:\Users\usuario\Documents\NetBeansProjects\Bingo\target\apidocs\package-search-index.js = 1696997338003
+C:\Users\usuario\Documents\NetBeansProjects\Bingo\target\apidocs\script.js = 1696997338044
+C:\Users\usuario\Documents\NetBeansProjects\Bingo\target\apidocs\search-page.js = 1696997338051
+C:\Users\usuario\Documents\NetBeansProjects\Bingo\target\apidocs\search.html = 1696997338026
+C:\Users\usuario\Documents\NetBeansProjects\Bingo\target\apidocs\search.js = 1696997338049
+C:\Users\usuario\Documents\NetBeansProjects\Bingo\target\apidocs\serialized-form.html = 1696997337933
+C:\Users\usuario\Documents\NetBeansProjects\Bingo\target\apidocs\stylesheet.css = 1696997338042
+C:\Users\usuario\Documents\NetBeansProjects\Bingo\target\apidocs\tag-search-index.js = 1696997338007
+C:\Users\usuario\Documents\NetBeansProjects\Bingo\target\apidocs\type-search-index.js = 1696997338004

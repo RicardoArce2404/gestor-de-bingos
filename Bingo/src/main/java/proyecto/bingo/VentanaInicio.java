@@ -55,7 +55,7 @@ public class VentanaInicio extends javax.swing.JFrame {
         jLabel1.setLabelFor(jLabel1);
         jLabel1.setName("ImagenBingo"); // NOI18N
 
-        jButton1.setBackground(new java.awt.Color(204, 255, 204));
+        jButton1.setBackground(new java.awt.Color(204, 204, 255));
         jButton1.setFont(new java.awt.Font("Bookman Old Style", 0, 14)); // NOI18N
         jButton1.setText("Ingresar");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
@@ -64,7 +64,7 @@ public class VentanaInicio extends javax.swing.JFrame {
             }
         });
 
-        jButton2.setBackground(new java.awt.Color(204, 255, 204));
+        jButton2.setBackground(new java.awt.Color(204, 204, 255));
         jButton2.setFont(new java.awt.Font("Bookman Old Style", 0, 14)); // NOI18N
         jButton2.setText("Salir");
 

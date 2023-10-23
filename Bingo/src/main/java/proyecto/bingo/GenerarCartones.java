@@ -4,16 +4,27 @@
  */
 package proyecto.bingo;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.text.ParseException;
+import javax.swing.DefaultListModel;
+import javax.swing.JOptionPane;
+
 /**
- *
- * @author usuario
+ * Ventana de generación de cartones.
  */
 public class GenerarCartones extends javax.swing.JFrame {
 
+    private Bingo bingo;
+
     /**
-     * Creates new form GenerarCartones
+     * Constructor de la clase GenerarCartones.
+     *
+     * @param pBingo Objeto Bingo de la sesión actual.
      */
-    public GenerarCartones() {
+    public GenerarCartones(Bingo pBingo) {
+        bingo = pBingo;
         initComponents();
     }
 
@@ -27,95 +38,105 @@ public class GenerarCartones extends javax.swing.JFrame {
     private void initComponents() {
 
         jPanel1 = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
-        jLabel3 = new javax.swing.JLabel();
-        jLabel4 = new javax.swing.JLabel();
-        jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
-        jTextField1 = new javax.swing.JTextField();
+        textoGenerarCartones = new javax.swing.JLabel();
+        textoCantidad = new javax.swing.JLabel();
+        botonGenerar = new javax.swing.JButton();
+        botonRegresar = new javax.swing.JButton();
+        entradaCantidad = new javax.swing.JSpinner();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        jList1 = new javax.swing.JList<>();
+        textoCantidad1 = new javax.swing.JLabel();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
         jPanel1.setBackground(new java.awt.Color(204, 255, 255));
 
-        jLabel1.setBackground(new java.awt.Color(0, 102, 102));
-        jLabel1.setFont(new java.awt.Font("Bookman Old Style", 0, 48)); // NOI18N
-        jLabel1.setForeground(new java.awt.Color(0, 102, 102));
-        jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel1.setText("Generar Cartones");
+        textoGenerarCartones.setBackground(new java.awt.Color(0, 102, 102));
+        textoGenerarCartones.setFont(new java.awt.Font("Bookman Old Style", 0, 48)); // NOI18N
+        textoGenerarCartones.setForeground(new java.awt.Color(0, 102, 102));
+        textoGenerarCartones.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        textoGenerarCartones.setText("Generar Cartones");
 
-        jLabel4.setFont(new java.awt.Font("Bookman Old Style", 0, 36)); // NOI18N
-        jLabel4.setText("Cantidad :");
+        textoCantidad.setFont(new java.awt.Font("Bookman Old Style", 0, 36)); // NOI18N
+        textoCantidad.setText("Cantidad:");
 
-        jButton1.setBackground(new java.awt.Color(204, 204, 255));
-        jButton1.setFont(new java.awt.Font("Bookman Old Style", 0, 12)); // NOI18N
-        jButton1.setText("Generar");
-
-        jButton2.setBackground(new java.awt.Color(204, 204, 255));
-        jButton2.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        jButton2.setText("Regresar");
-
-        jTextField1.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
-        jTextField1.addActionListener(new java.awt.event.ActionListener() {
+        botonGenerar.setBackground(new java.awt.Color(204, 204, 255));
+        botonGenerar.setFont(new java.awt.Font("Bookman Old Style", 0, 12)); // NOI18N
+        botonGenerar.setText("Generar");
+        botonGenerar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jTextField1ActionPerformed(evt);
+                botonGenerarActionPerformed(evt);
             }
         });
+
+        botonRegresar.setBackground(new java.awt.Color(204, 204, 255));
+        botonRegresar.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        botonRegresar.setText("Regresar");
+        botonRegresar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                botonRegresarActionPerformed(evt);
+            }
+        });
+
+        jScrollPane1.setViewportView(jList1);
+
+        textoCantidad1.setFont(new java.awt.Font("Bookman Old Style", 0, 24)); // NOI18N
+        textoCantidad1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        textoCantidad1.setText("Códigos de los cartones generados:");
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(textoCantidad)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(entradaCantidad, javax.swing.GroupLayout.PREFERRED_SIZE, 179, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(14, 14, 14)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(jLabel3)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addComponent(jLabel4)
-                                .addGap(18, 18, 18)
-                                .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 179, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(0, 0, Short.MAX_VALUE)))
-                        .addGap(35, 35, 35))
+                        .addGap(168, 168, 168)
+                        .addComponent(botonRegresar, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(52, 52, 52)
+                        .addComponent(botonGenerar, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel2)
-                            .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 440, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(23, 23, 23))))
+                        .addGap(68, 68, 68)
+                        .addComponent(textoGenerarCartones, javax.swing.GroupLayout.PREFERRED_SIZE, 440, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(86, Short.MAX_VALUE))
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(46, 46, 46)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(textoCantidad1, javax.swing.GroupLayout.DEFAULT_SIZE, 499, Short.MAX_VALUE)
+                    .addComponent(jScrollPane1))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addGap(21, 21, 21)
-                .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel2)
-                .addGap(40, 40, 40)
+                .addComponent(textoGenerarCartones)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel4)
-                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(48, 48, 48)
-                .addComponent(jLabel3)
+                    .addComponent(textoCantidad)
+                    .addComponent(entradaCantidad, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 40, Short.MAX_VALUE)
+                .addComponent(textoCantidad1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 244, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(27, 27, 27)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(botonGenerar, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(botonRegresar, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(21, 21, 21))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -125,9 +146,48 @@ public class GenerarCartones extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jTextField1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField1ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jTextField1ActionPerformed
+  private void botonGenerarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_botonGenerarActionPerformed
+      try { // Esto se hace para asegurar que los cambios introducidos manualmente sean obtenidos correctamente
+          entradaCantidad.commitEdit();
+      } catch (ParseException pe) { // En caso de error se muestra una ventana emergente con dicho error
+          JOptionPane.showMessageDialog(this, "Hay un error en la cantidad introducida.",
+                  "Cantidad inválida", JOptionPane.ERROR_MESSAGE);
+          return;
+      }
+      int cantidadCartones = (int) entradaCantidad.getValue();
+      if (cantidadCartones < 1 || cantidadCartones > 500) {
+          JOptionPane.showMessageDialog(this, "La cantidad de cartones debe estar entre 1 y 500.",
+                  "Cantidad fuera de rango", JOptionPane.ERROR_MESSAGE);
+          return;
+      }
+      try {
+          // Borra los cartones existentes de la carpeta y de la memoria
+          bingo.borrarCartonesAnteriores();
+          bingo.resetearListasCartones();
+
+          // Genera nuevos cartones
+          bingo.generarCartones(cantidadCartones);
+
+          // Limpia el JList antes de agregar los nuevos cartones
+          DefaultListModel<String> listModel = new DefaultListModel<>();
+          jList1.setModel(listModel);
+
+          // Agrega los nuevos cartones al modelo
+          for (int i = 0; i < bingo.getCartonesGenerados().size(); i++) {
+              CartonBingo carton = bingo.getCartonesGenerados().get(i);
+              listModel.addElement("Carton " + (i + 1) + ": Identificador " + carton.getCodigoUnico());
+          }
+
+      } catch (MalformedURLException | FileNotFoundException mue) {
+          JOptionPane.showMessageDialog(this, "Hubo un error en la generación de cartones",
+                                        "Error", JOptionPane.ERROR_MESSAGE);
+      }
+
+  }//GEN-LAST:event_botonGenerarActionPerformed
+
+  private void botonRegresarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_botonRegresarActionPerformed
+      this.dispose();
+  }//GEN-LAST:event_botonRegresarActionPerformed
 
     /**
      * @param args the command line arguments
@@ -156,22 +216,17 @@ public class GenerarCartones extends javax.swing.JFrame {
         }
         //</editor-fold>
 
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new GenerarCartones().setVisible(true);
-            }
-        });
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
+    private javax.swing.JButton botonGenerar;
+    private javax.swing.JButton botonRegresar;
+    private javax.swing.JSpinner entradaCantidad;
+    private javax.swing.JList<String> jList1;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JTextField jTextField1;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JLabel textoCantidad;
+    private javax.swing.JLabel textoCantidad1;
+    private javax.swing.JLabel textoGenerarCartones;
     // End of variables declaration//GEN-END:variables
 }

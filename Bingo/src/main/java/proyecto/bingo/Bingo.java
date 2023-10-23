@@ -9,15 +9,10 @@ import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Table;
 import com.itextpdf.layout.property.UnitValue;
 import com.itextpdf.layout.property.TextAlignment;
-import java.util.Scanner;
-import java.util.Random;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
 import java.io.FileWriter;
@@ -25,649 +20,480 @@ import java.io.FileReader;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
+import java.io.File;
+
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import org.w3c.dom.DOMException;
+
+import org.w3c.dom.DOMImplementation;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
+import org.xml.sax.SAXException;
 
 /**
  * Esta clase representa un programa para generar cartones de bingo y crear
  * archivos PDF para cada uno.
  */
-public class Bingo {
+public final class Bingo {
 
-    // Lista para almacenar los cartones generados.
-    private static final List<CartonBingo> cartones = new ArrayList<>();
+  private ArrayList<CartonBingo> cartonesGenerados = new ArrayList();  // Todos los cartones generados.
+  private ArrayList<CartonBingo> cartonesEnviados = new ArrayList();  // Solo los cartones enviados por correo.
+  private final ArrayList<Jugador> jugadores = new ArrayList();     // Jugadores registrados.
+  private final ArrayList<Integer> numerosLlamados = new ArrayList(); // Numeros llamados
+  private ArrayList<Integer> numerosLlamadosJuego = new ArrayList();
+  private final ArrayList<CartonBingo> cartonesGanadores = new ArrayList(); // Cartón o cartones ganadores
+  private String modoJuego;
+  private String premio;
 
-    // Lista para almacenar los jugadores registrados.
-    private static final List<Jugador> jugadores = new ArrayList<>();
+  /**
+   * Contructor de la clase Bingo.
+   */
+  public Bingo() {
+    cargarJugadoresDesdeCSV(); // Cargar jugadores desde el archivo CSV
+  }
 
-    // Agrega esta constante para definir el tamaño del cartón de bingo
-    private static final int TAMANO_CARTON = 5;
-    private static final List<Integer> numerosLlamados = new ArrayList<>();
+  /**
+   * Realiza el juego de bingo con la configuración especificada.
+   *
+   */
+  public void cantarNumero() {
 
-    /**
-     * El método principal del programa.
-     *
-     * @param args Los argumentos de línea de comandos (no se utilizan en este
-     * caso).
-     * @throws MalformedURLException Si la URL de la imagen es incorrecta.
-     * @throws FileNotFoundException Si no se puede encontrar la ubicación de
-     * destino para el archivo PDF.
-     */
-    public static void main(String[] args) throws MalformedURLException, FileNotFoundException {
-        try (Scanner scanner = new Scanner(System.in)) {
+    // Generar un número aleatorio y verificar que no se haya llamado antes
+    int numeroLlamado;
+    do {
+      numeroLlamado = generarNumeroAleatorio(1, 75);
+    } while (numerosLlamadosJuego.contains(numeroLlamado));
 
-            cargarJugadoresDesdeCSV(); // Cargar jugadores desde el archivo CSV
-
-            while (true) {
-                mostrarMenuPrincipal();
-
-                int opcion = scanner.nextInt();
-                scanner.nextLine(); // Consume el salto de línea
-
-                if (opcion == 1) {
-                    registrarJugador(scanner);
-                } else if (opcion == 2) {
-                    generarYMostrarCartones(scanner);
-                } else if (opcion == 3) {
-                    mostrarListaDeCartonesConIdentificadores();
-                } else if (opcion == 4) {
-                    buscarYMostrarCarton(scanner);
-                } else if (opcion== 5) {
-                  enviarCorreo(scanner);
-                } else if (opcion == 6) {
-                    iniciarJuegoDeBingo(scanner);
-                } else if (opcion == 7) {
-                    guardarJugadoresEnCSV(); // Guardar jugadores en el archivo CSV
-                    System.out.println("Gracias por jugar. ¡Hasta luego!");
-                    break;
-                } else {
-                    System.out.println("Opción no válida. Por favor, elija una opción válida.");
-                }
-            }
-        }
+    numerosLlamados.add(numeroLlamado); // Agregar el número llamado a la lista
+    numerosLlamadosJuego.add(numeroLlamado);
+    for (CartonBingo carton : cartonesEnviados) {
+      // Primero se verifica si el cartón tiene el número llamado, luego se verifica si
+      // ese cartón tiene la configuración correspondiente al modo de juego en uso.
+      if (!carton.tieneNumero(numeroLlamado)) {
+        continue;
+      }
+      if (modoJuego.equals("En X") && carton.tieneConfiguracionX(numerosLlamadosJuego)
+          || modoJuego.equals("4 esquinas") && carton.tieneCuatroEsquinas(numerosLlamadosJuego)
+          || modoJuego.equals("Cartón lleno") && carton.tieneCartonLleno(numerosLlamadosJuego)
+          || modoJuego.equals("En Z") && carton.tieneConfiguracionZ(numerosLlamadosJuego)) {
+        cartonesGanadores.add(carton);
+      }
     }
-// Actualizar el método para iniciar el juego de bingo
+  }
 
-    public static void iniciarJuegoDeBingo(Scanner scanner) {
-        System.out.println("Elija la configuración de juego:");
-        System.out.println("1. Jugar en X");
-        System.out.println("2. Cuatro esquinas");
-        System.out.println("3. Cartón lleno");
-        System.out.println("4. Jugar en Z");
-        System.out.print("Elija una opción: ");
-        int configuracionJuego = scanner.nextInt();
-        scanner.nextLine();
+  /**
+   * Envía un cartón de bingo por correo electrónico.
+   *
+   * @param pCorreoDestinatario Correo del jugador al cual se le quiere enviar el o los cartones.
+   * @param pCantidad Cantidad de cartones a enviar.
+   */
+  public void enviarCorreo(String pCorreoDestinatario, int pCantidad) {
+    Random aleatorio = new Random();
+    String[] imagenesBingo = new String[pCantidad];
 
-        if (configuracionJuego >= 1 && configuracionJuego <= 4) {
-            jugarBingo(configuracionJuego);
-        } else {
-            System.out.println("Opción no válida. Por favor, elija una configuración de juego válida.");
+    for (int i = 0; i < pCantidad; i++) {
+      int indiceRandom = aleatorio.nextInt(cartonesGenerados.size());
+      CartonBingo carton = cartonesGenerados.get(indiceRandom);
+      cartonesGenerados.remove(indiceRandom);
+
+      for (Jugador jugador : jugadores) {  // Asignarle al cartón su respectivo dueño.
+        if (jugador.getCorreo().equals(pCorreoDestinatario)) {
+          carton.setDueño(jugador);
+          break;
         }
+      }
+
+      cartonesEnviados.add(carton);
+      String ruta = ".\\Cartones\\" + carton.getCodigoUnico() + ".pdf";
+      imagenesBingo[i] = ruta;
+    }
+    CuentaCorreo cuenta = new CuentaCorreo("bingolimonense@gmail.com");
+    cuenta.enviarCorreo(pCorreoDestinatario, "Cartones Bingo",
+                        "Se adjuntas las imagenes de los cartones que pediste para el bingo", imagenesBingo);
+  }
+
+  /**
+   * Genera un número aleatorio en el rango especificado.
+   *
+   * @param pMin El valor mínimo del rango.
+   * @param pMax El valor máximo del rango.
+   * @return Un número aleatorio dentro del rango.
+   */
+  public int generarNumeroAleatorio(int pMin, int pMax) {
+    Random random = new Random();
+    return random.nextInt(pMax - pMin + 1) + pMin;
+  }
+
+  /**
+   * Genera un código único de tres letras y tres números.
+   *
+   * @return Un código único en formato String.
+   */
+  public String generarCodigoUnico() {
+    StringBuilder codigo = new StringBuilder();
+    Random rand = new Random();
+
+    for (int i = 0; i < 3; i++) {
+      char letra = (char) (rand.nextInt(26) + 'A');
+      codigo.append(letra);
     }
 
-    public static void jugarBingo(int configuracionJuego) {
-        // Lógica para el juego de bingo
-        CartonBingo cartonGanador = null;
-        boolean juegoEnCurso = true;
-
-        while (juegoEnCurso) {
-            // Generar un número aleatorio y verificar que no se haya llamado antes
-            int numeroLlamado;
-            do {
-                numeroLlamado = generarNumeroAleatorio(1, 75);
-            } while (numerosLlamados.contains(numeroLlamado));
-
-            numerosLlamados.add(numeroLlamado); // Agregar el número llamado a la lista
-
-            System.out.println("Número llamado: " + numeroLlamado);
-
-            // Verificar si algún cartón tiene el número llamado
-            for (CartonBingo carton : cartones) {
-                if (carton.tieneNumero(numeroLlamado)) {
-                    System.out.println("Cartón " + carton.getNumeroCarton() + " tiene el número " + numeroLlamado);
-                    // Aquí es donde verificamos si el cartón es ganador según la configuración específica
-                    if (configuracionJuego == 1 && carton.tieneConfiguracionX()) {
-                        cartonGanador = carton;
-                        juegoEnCurso = false;
-                        break;
-                    } else if (configuracionJuego == 2 && carton.tieneCuatroEsquinas()) {
-                        cartonGanador = carton;
-                        juegoEnCurso = false;
-                        break;
-                    } else if (configuracionJuego == 3 && carton.tieneCartonLleno()) {
-                        cartonGanador = carton;
-                        juegoEnCurso = false;
-                        break;
-                    } else if (configuracionJuego == 4 && carton.tieneConfiguracionZ()) {
-                        cartonGanador = carton;
-                        juegoEnCurso = false;
-                        break;
-                    }
-                }
-            }
-
-            if (cartonGanador != null) {
-                System.out.println("¡Tenemos un ganador! Cartón " + cartonGanador.getNumeroCarton());
-                break;
-            }
-        }
+    for (int i = 0; i < 3; i++) {
+      int numero = rand.nextInt(10);
+      codigo.append(numero);
     }
-    
-    public static void enviarCorreo(Scanner scanner){
+
+    return codigo.toString();
+  }
+
+  /**
+   * Genera un cartón de bingo con números aleatorios y un código único.
+   *
+   * @param pCodigoUnico El código único del cartón.
+   * @return Un objeto CartonBingo que representa el cartón generado.
+   */
+  public CartonBingo generarTarjetaDeBingoConCodigoUnico(String pCodigoUnico) {
+    int[][] tarjeta = new int[5][5];
+    ArrayList<Integer> numerosUtilizados = new ArrayList<>();
+    boolean valido = false;
+    int tmp = 0;
+
+    for (int i = 0; i <= 4; i++) {
+      for (int j = 0; j < 5; j++) {
+        while (!valido) {
+          tmp = (int) (Math.random() * 15) + 1 + 15 * i;
+          if (!numerosUtilizados.contains(tmp)) {
+            valido = true;
+            numerosUtilizados.add(tmp);
+          }
+        }
+        tarjeta[j][i] = tmp;
+        valido = false;
+      }
+    }
+
+    return new CartonBingo(pCodigoUnico, tarjeta);
+  }
+
+  /**
+   * Crea un archivo PDF para el cartón de bingo.
+   *
+   * @param pCarton El objeto CartonBingo que representa el cartón.
+   * @param pNumeroCarton El número del cartón.
+   * @throws MalformedURLException Si la URL de la imagen es incorrecta.
+   * @throws FileNotFoundException Si no se puede encontrar la ubicación de
+   * destino para el archivo PDF.
+   */
+  public void crearArchivoPDF(CartonBingo pCarton, int pNumeroCarton) throws MalformedURLException, FileNotFoundException {
+    String rutaCarpetaCartones = ".\\Cartones";
+    File carpetaCartones = new File(rutaCarpetaCartones);
+
+    if (!carpetaCartones.exists()) {
+      carpetaCartones.mkdirs();
+    }
+
+    String nombreArchivoPDF = rutaCarpetaCartones + "\\" + pCarton.getCodigoUnico() + ".pdf";
+
+    try {
+      PdfWriter writer = new PdfWriter(new FileOutputStream(nombreArchivoPDF));
+      PdfDocument pdfDoc = new PdfDocument(writer);
+
+      try (Document doc = new Document(pdfDoc)) {
+        Table table = new Table(UnitValue.createPercentArray(new float[]{20, 20, 20, 20, 20}));
+        table.setWidth(UnitValue.createPercentValue(100));
+
+        // Agregar encabezados de las columnas
+        table.addCell("-             B            -");
+        table.addCell("-             I            -");
+        table.addCell("-             N          -");
+        table.addCell("-             G          -");
+        table.addCell("-             O          -");
+
+        // Agregar los números del cartón a la tabla
+        for (int[] fila : pCarton.getNumeros()) {
+          for (int numero : fila) {
+            table.addCell(Integer.toString(numero));
+          }
+        }
+
+        String rutaImagen = ".\\Bingo.png";
+        Image imagen = new Image(ImageDataFactory.create(rutaImagen));
+        imagen.setFixedPosition(pdfDoc.getDefaultPageSize().getWidth() - 100, pdfDoc.getDefaultPageSize().getHeight() - 100);
+        doc.add(imagen);
+        doc.add(new Paragraph("\n"));
+        doc.add(new Paragraph("\n"));
+        doc.add(new Paragraph("\n"));
+        doc.add(table);
+        doc.add(new Paragraph("- Identificador: " + pCarton.getCodigoUnico()).setTextAlignment(TextAlignment.RIGHT));
+      }
       
-      System.out.println("Ingrese el correo:");
-      String correo = scanner.nextLine();
-      System.out.println("Ingrese la cantidad de cartones (Entre 1 y 5):");
-      int cantidad = scanner.nextInt();
-      enviarCartonCorreo("sermonbadi@gmail.com", correo, cantidad);
+    } catch (IOException e) {
+      System.err.println("\n Error al crear el archivo PDF: " + e.getMessage());
     }
-    // Genera un número aleatorio en el rango especificado
-    public static int generarNumeroAleatorio(int min, int max) {
-        Random random = new Random();
-        return random.nextInt(max - min + 1) + min;
-    }
+  }
 
-    // Método para mostrar la lista de cartones con identificadores
-    public static void mostrarListaDeCartonesConIdentificadores() {
-        System.out.println("Lista de Cartones Disponibles: \n");
-        for (int i = 0; i < cartones.size(); i++) {
-            CartonBingo carton = cartones.get(i);
-            System.out.println("Carton " + (i + 1) + ": Identificador: " + carton.getCodigoUnico());
+  /**
+   * Busca un cartón por su código único.
+   *
+   * @param pCodigo El código único del cartón a buscar.
+   * @return El objeto CartonBingo si se encuentra, o null si no se encuentra.
+   */
+  public CartonBingo buscarCartonPorCodigo(String pCodigo) {
+    for (CartonBingo carton : cartonesEnviados) {
+      if (carton.getCodigoUnico().equalsIgnoreCase(pCodigo)) {
+        return carton;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Busca un cartón por su código único y lo muestra en la consola.
+   *
+   * @param pScanner El objeto Scanner para la entrada del usuario.
+   */
+  public void buscarYMostrarCarton(Scanner pScanner) {
+    System.out.print("Ingrese el identificador del cartón que desea buscar: ");
+    String codigo = pScanner.nextLine();
+
+    CartonBingo carton = buscarCartonPorCodigo(codigo);
+
+    // logica para mostrar el carton encontrado en la GUI
+  }
+
+  /**
+   * Registra un nuevo jugador con nombre, cédula y correo.
+   *
+   * @param pNombre Nombre del jugador.
+   * @param pCedula Cédula del jugador.
+   * @param pCorreo Correo electrónico del jugador.
+   */
+  public void registrarJugador(String pNombre, String pCedula, String pCorreo) {
+    // Las validaciones para los parámetros usados en este método se realizan desde la
+    // interfaz, al llegar aquí se puede asegurar que los parámetros ya fueron validados.
+    Jugador nuevoJugador = new Jugador(pNombre, pCedula, pCorreo);
+    jugadores.add(nuevoJugador);
+  }
+  
+  /**
+   * Genera y muestra los cartones de bingo.
+   *
+   * @param pCantidadCartones Cantidad de cartones a generar.
+   * @throws java.net.MalformedURLException
+   * @throws java.io.FileNotFoundException
+   */
+  public void generarCartones(int pCantidadCartones) throws MalformedURLException, FileNotFoundException {
+    borrarCartonesAnteriores(); // Elimina los cartones anteriores antes de generar los nuevos.
+    // Las validaciones para los parámetros usados en este método se realizan desde la
+    // interfaz, al llegar aquí se puede asegurar que los parámetros ya fueron validados.
+    // Generar y mostrar la cantidad de cartones especificada
+    for (int i = 1; i <= pCantidadCartones; i++) {
+      String codigoUnico = generarCodigoUnico();
+      CartonBingo carton = generarTarjetaDeBingoConCodigoUnico(codigoUnico);
+      cartonesGenerados.add(carton);
+      crearArchivoPDF(carton, i);
+    }
+  }
+
+  /**
+   * Este método borra los archivos de cartones anteriores en una carpeta
+   * especificada.
+   */
+  public void borrarCartonesAnteriores() {
+    // Ruta de la carpeta que contiene los cartones anteriores
+    String rutaCarpetaCartones = ".\\Cartones";
+
+    // Crear un objeto File para representar la carpeta de cartones
+    File carpetaCartones = new File(rutaCarpetaCartones);
+
+    // Obtener una lista de archivos en la carpeta
+    File[] archivos = carpetaCartones.listFiles();
+
+    if (archivos != null) {  // Verificar si la lista de archivos no es nula
+      for (File archivo : archivos) {  // Iterar a través de los archivos en la carpeta
+        if (archivo.isFile()) {  // Verificar si el archivo es un archivo (no una carpeta)
+          archivo.delete();  // Borrar el archivo
         }
+      }
     }
+  }
 
-    /**
-     * Genera un código único de tres letras y tres números.
-     *
-     * @return Un código único en formato String.
-     */
-    public static String generarCodigoUnico() {
-        StringBuilder codigo = new StringBuilder();
-        Random rand = new Random();
-
-        for (int i = 0; i < 3; i++) {
-            char letra = (char) (rand.nextInt(26) + 'A');
-            codigo.append(letra);
+  /**
+   * Carga los jugadores desde un archivo CSV.
+   */
+  public void cargarJugadoresDesdeCSV() {
+    try (BufferedReader reader = new BufferedReader(new FileReader("jugadores.csv"))) {
+      String line;
+      while ((line = reader.readLine()) != null) {
+        String[] parts = line.split(",");
+        if (parts.length == 3) {
+          String nombre = parts[0];
+          String cedula = parts[1];
+          String correo = parts[2];
+          Jugador jugador = new Jugador(nombre, cedula, correo);
+          jugadores.add(jugador);
         }
-
-        for (int i = 0; i < 3; i++) {
-            int numero = rand.nextInt(10);
-            codigo.append(numero);
-        }
-
-        return codigo.toString();
+      }
+    } catch (IOException e) {
+      System.err.println("Error al cargar los jugadores desde el archivo CSV: " + e.getMessage());
     }
+  }
 
-    /**
-     * Genera un cartón de bingo con números aleatorios y un código único.
-     *
-     * @param codigoUnico El código único del cartón.
-     * @return Un objeto CartonBingo que representa el cartón generado.
-     */
-    public static CartonBingo generarTarjetaDeBingoConCodigoUnico(String codigoUnico) {
-        int[][] tarjeta = new int[5][5];
-        ArrayList<Integer> numerosUtilizados = new ArrayList<>();
-        boolean valido = false;
-        int tmp = 0;
-
-        for (int i = 0; i <= 4; i++) {
-            for (int j = 0; j < 5; j++) {
-                while (!valido) {
-                    tmp = (int) (Math.random() * 15) + 1 + 15 * i;
-                    if (!numerosUtilizados.contains(tmp)) {
-                        valido = true;
-                        numerosUtilizados.add(tmp);
-                    }
-                }
-                tarjeta[j][i] = tmp;
-                valido = false;
-            }
-        }
-
-        return new CartonBingo(codigoUnico, tarjeta);
+  /**
+   * Guarda los jugadores en un archivo CSV.
+   */
+  public void guardarJugadoresEnCSV() {
+    try (BufferedWriter writer = new BufferedWriter(new FileWriter("jugadores.csv"))) {
+      for (Jugador jugador : jugadores) {
+        writer.write(jugador.toString());
+        writer.newLine();
+      }
+    } catch (IOException e) {
+      System.err.println("Error al guardar los jugadores en el archivo CSV: " + e.getMessage());
     }
+  }
+  
+  public void agregarArchivoXml(String nombre,String tipoJuego, String numerosCantados, String ganador, LocalDateTime fechaHora) throws TransformerException, SAXException{
+      File file = new File(nombre);
+      try {
+        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+        org.w3c.dom.Document documento = dBuilder.parse(file);
+        Element raiz = documento.getDocumentElement();
+        Element partida = documento.createElement("partida");
+        raiz.appendChild(partida);
+        
+        Element tipo = documento.createElement("tipo");
+        Text contPartida = documento.createTextNode(tipoJuego);
+        partida.appendChild(tipo);
+        tipo.appendChild(contPartida);
+        
+        Element numsCantados = documento.createElement("numerosCantados");
+        Text contNumsCantados = documento.createTextNode(numerosCantados);
+        partida.appendChild(numsCantados);
+        numsCantados.appendChild(contNumsCantados);
+        
+        Element ganadores = documento.createElement("ganadores");
+        Text contGanadores = documento.createTextNode(ganador);
+        partida.appendChild(ganadores);
+        ganadores.appendChild(contGanadores);
+        
+        Element hora = documento.createElement("hora");
+        Text contHora = documento.createTextNode(DateTimeFormatter.ofPattern("HH:mm").format(fechaHora));
+        partida.appendChild(hora);
+        hora.appendChild(contHora);
+        
+        Element fecha = documento.createElement("fecha");
+        Text contFecha = documento.createTextNode(DateTimeFormatter.ofPattern("ddMMyyy").format(fechaHora));
+        partida.appendChild(fecha);
+        fecha.appendChild(contFecha);
+        
+        TransformerFactory transformerFactory = TransformerFactory.newInstance();
+        Transformer transformer = transformerFactory.newTransformer();
+        transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+        transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+        StringWriter sw = new StringWriter();
+        StreamResult sr = new StreamResult(sw);
+        DOMSource source = new DOMSource(documento);
+	 
 
-    /**
-     * Crea un archivo PDF para el cartón de bingo.
-     *
-     * @param carton El objeto CartonBingo que representa el cartón.
-     * @param numeroCarton El número del cartón.
-     * @throws MalformedURLException Si la URL de la imagen es incorrecta.
-     * @throws FileNotFoundException Si no se puede encontrar la ubicación de
-     * destino para el archivo PDF.
-     */
-    public static void crearArchivoPDF(CartonBingo carton, int numeroCarton) throws MalformedURLException, FileNotFoundException {
-        String rutaCarpetaCartones = "C:\\Users\\User\\OneDrive - Estudiantes ITCR\\Escritorio\\TEC\\POO\\Proyecto1\\Bingo\\Cartones";
-        File carpetaCartones = new File(rutaCarpetaCartones);
-
-        if (!carpetaCartones.exists()) {
-            carpetaCartones.mkdirs();
-        }
-
-        String nombreArchivoPDF = rutaCarpetaCartones + "\\" + carton.getCodigoUnico() + ".pdf";
-
-        try {
-            PdfWriter writer = new PdfWriter(new FileOutputStream(nombreArchivoPDF));
-            PdfDocument pdfDoc = new PdfDocument(writer);
-
-            try (Document doc = new Document(pdfDoc)) {
-                Table table = new Table(UnitValue.createPercentArray(new float[]{20, 20, 20, 20, 20}));
-                table.setWidth(UnitValue.createPercentValue(100));
-
-                // Agregar encabezados de las columnas
-                table.addCell("-             B            -");
-                table.addCell("-             I            -");
-                table.addCell("-             N          -");
-                table.addCell("-             G          -");
-                table.addCell("-             O          -");
-
-                // Agregar los números del cartón a la tabla
-                for (int[] fila : carton.getNumeros()) {
-                    for (int numero : fila) {
-                        table.addCell(Integer.toString(numero));
-                    }
-                }
-
-                String rutaImagen = "C:\\Users\\User\\OneDrive - Estudiantes ITCR\\Escritorio\\TEC\\POO\\Proyecto1\\Bingo\\src\\main\\java\\proyecto\\bingo\\Bingo.png";
-                Image imagen = new Image(ImageDataFactory.create(rutaImagen));
-                imagen.setFixedPosition(pdfDoc.getDefaultPageSize().getWidth() - 100, pdfDoc.getDefaultPageSize().getHeight() - 100);
-                doc.add(imagen);
-                doc.add(new Paragraph("\n"));
-                doc.add(new Paragraph("\n"));
-                doc.add(new Paragraph("\n"));
-                doc.add(table);
-                doc.add(new Paragraph("- Identificador: " + carton.getCodigoUnico()).setTextAlignment(TextAlignment.RIGHT));
-            }
-
-            System.out.println("\n Archivo PDF generado: " + nombreArchivoPDF);
-        } catch (IOException e) {
-            System.err.println("\n Error al crear el archivo PDF: " + e.getMessage());
-        }
+        
+        transformer.transform(source, sr);
+        PrintWriter writer = new PrintWriter(new FileWriter(nombre));
+        writer.println(sw.toString());
+        writer.close();
+      } catch(Exception e) {
+          e.printStackTrace();
     }
+  }
+  public void setBlankNumerosLlamados(){
+    numerosLlamadosJuego.clear();
+  }
+  
+  public void setBlankCartonesGanadores(){
+    cartonesGanadores.clear();
+  }
 
-    /**
-     * Muestra la lista de cartones disponibles.
-     */
-    public static void mostrarListaDeCartones() {
-        System.out.println("Lista de Cartones Disponibles: \n");
-        for (int i = 0; i < cartones.size(); i++) {
-            CartonBingo carton = cartones.get(i);
-            System.out.println("Carton : " + (i + 1) + ". Identificador: " + carton.getCodigoUnico());
-        }
-    }
+  /**
+   * Obtiene la lista de cartones a usar en la partida.
+   *
+   * @return La lista de cartones a usar.
+   */
+  public ArrayList<CartonBingo> getCartones() {
+    return cartonesEnviados;
+  }
+  
+  /**
+   * Obtiene la lista de cartones que aún no han sido enviados por correo.
+   *
+   * @return La lista de cartones generados.
+   */
+  public ArrayList<CartonBingo> getCartonesGenerados() {
+    return cartonesGenerados;
+  }
 
-    /**
-     * Busca un cartón por su código único.
-     *
-     * @param codigo El código único del cartón a buscar.
-     * @return El objeto CartonBingo si se encuentra, o null si no se encuentra.
-     */
-    public static CartonBingo buscarCartonPorCodigo(String codigo) {
-        for (CartonBingo carton : cartones) {
-            if (carton.getCodigoUnico().equalsIgnoreCase(codigo)) {
-                return carton;
-            }
-        }
-        return null;
-    }
+  /**
+   * Obtiene la lista de jugadores registrados.
+   *
+   * @return La lista de jugadores.
+   */
+  public ArrayList<Jugador> getJugadores() {
+    return jugadores;
+  }
 
-    /**
-     * Busca un cartón por su código único y lo muestra en la consola.
-     *
-     * @param scanner El objeto Scanner para la entrada del usuario.
-     */
-    public static void buscarYMostrarCarton(Scanner scanner) {
-        System.out.print("Ingrese el identificador del cartón que desea buscar: ");
-        String codigo = scanner.nextLine();
+  /**
+   * Obtiene la lista de números llamados durante el juego.
+   *
+   * @return La lista de números llamados.
+   */
+  public ArrayList<Integer> getNumerosLlamados() {
+    return numerosLlamadosJuego;
+  }
 
-        CartonBingo carton = buscarCartonPorCodigo(codigo);
+  /**
+   * Obtiene la lista de cartones ganadores.
+   *
+   * @return Una lista de objetos CartonBingo.
+   */
+  public ArrayList<CartonBingo> getCartonesGanadores() {
+    return cartonesGanadores;
+  }
+  
+  public String getModoJuego() {
+    return modoJuego;
+  }
+  
+  public void setModoJuego(String pModoJuego) {
+    modoJuego = pModoJuego;
+  }
+  
+  public String getPremio() {
+    return premio;
+  }
+  
+  public void setPremio(String pPremio) {
+    premio = pPremio;
+  }
 
-        if (carton != null) {
-            mostrarCartonEnConsola(carton);
-        } else {
-            System.out.println("No se encontró ningún cartón con el identificador proporcionado.");
-        }
-    }
-
-    /**
-     * Muestra la información de un cartón en la consola.
-     *
-     * @param carton El objeto CartonBingo que representa el cartón a mostrar.
-     */
-    public static void mostrarCartonEnConsola(CartonBingo carton) {
-        System.out.println("Identificador de Cartón: " + carton.getCodigoUnico());
-        System.out.println("Contenido del Cartón:");
-        int[][] numeros = carton.getNumeros();
-        System.out.print("B\tI\tN\tG\tO\n");
-        for (int[] fila : numeros) {
-            for (int numero : fila) {
-                System.out.print(numero + "\t");
-            }
-            System.out.println();
-        }
-        System.out.println();
-    }
-
-    /**
-     * Muestra el menú principal.
-     */
-    public static void mostrarMenuPrincipal() {
-        System.out.println("\n----- Menú Principal -----");
-        System.out.println("1. Registrar jugador");
-        System.out.println("2. Generar y mostrar cartones");
-        System.out.println("3. Lista de cartones creados");
-        System.out.println("4. Buscar cartón por identificador");
-        System.out.println("5. Enviar cartones");
-        System.out.println("6. Iniciar juego");
-        System.out.println("7. Salir");
-        System.out.print("Elija una opción: ");
-    }
-
-    /**
-     * Registra un nuevo jugador con nombre, cédula y correo.
-     *
-     * @param scanner El objeto Scanner para la entrada del usuario.
-     */
-    public static void registrarJugador(Scanner scanner) {
-        System.out.println("----- Registrar Jugador -----");
-        System.out.print("Nombre completo (máximo 50 caracteres): ");
-        String nombre = scanner.nextLine();
-
-        // Validar que el nombre no exceda los 50 caracteres
-        if (nombre.length() > 50) {
-            System.out.println("Error: El nombre no puede exceder los 50 caracteres.");
-            return;
-        }
-
-        // Validar que la cédula no se repita
-        String cedula;
-        do {
-            System.out.print("Cédula (7 caracteres, no se repite entre los jugadores): ");
-            cedula = scanner.nextLine();
-        } while (cedulaRepetida(cedula) || cedula.length() != 7);
-
-        System.out.print("Correo electrónico (debe contener '@'): ");
-        String correo = scanner.nextLine();
-
-        // Validar que el correo contenga el carácter '@'
-        if (!correo.contains("@")) {
-            System.out.println("Error: El correo electrónico debe contener el carácter '@'.");
-            return;
-        }
-
-        Jugador nuevoJugador = new Jugador(nombre, cedula, correo);
-        jugadores.add(nuevoJugador);
-        System.out.println("Jugador registrado con éxito.");
-    }
-
-    /**
-     * Genera y muestra los cartones de bingo.
-     *
-     * @param scanner El objeto Scanner para la entrada del usuario.
-     * @throws java.net.MalformedURLException
-     * @throws java.io.FileNotFoundException
-     */
-    public static void generarYMostrarCartones(Scanner scanner) throws MalformedURLException, FileNotFoundException {
-        System.out.print("Recuerda que el rango de creación es de 1 a 500 cartones\n");
-        System.out.print("Ingrese la cantidad de cartones de bingo a crear: ");
-        int cantidadCartones = scanner.nextInt();
-
-        // Validar que la cantidad esté dentro del rango 1-500
-        if (cantidadCartones < 1 || cantidadCartones > 500) {
-            System.out.println("Error: Cantidad es inválida (debe estar en el rango de 1 a 500).");
-        } else {
-            // Generar y mostrar la cantidad de cartones especificada
-            for (int i = 1; i <= cantidadCartones; i++) {
-                System.out.println("Cartón " + i + ":");
-                String codigoUnico = generarCodigoUnico();
-                CartonBingo carton = generarTarjetaDeBingoConCodigoUnico(codigoUnico);
-                mostrarCartonEnConsola(carton);
-                cartones.add(carton);
-                crearArchivoPDF(carton, i);
-                System.out.println(); // Separador entre cartones
-            }
-        }
-    }
-
-    /**
-     * Carga los jugadores desde un archivo CSV.
-     */
-    public static void cargarJugadoresDesdeCSV() {
-        try (BufferedReader reader = new BufferedReader(new FileReader("jugadores.csv"))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                String[] parts = line.split(",");
-                if (parts.length == 3) {
-                    String nombre = parts[0];
-                    String cedula = parts[1];
-                    String correo = parts[2];
-                    Jugador jugador = new Jugador(nombre, cedula, correo);
-                    jugadores.add(jugador);
-                }
-            }
-        } catch (IOException e) {
-            System.err.println("Error al cargar los jugadores desde el archivo CSV: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Guarda los jugadores en un archivo CSV.
-     */
-    public static void guardarJugadoresEnCSV() {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter("jugadores.csv"))) {
-            for (Jugador jugador : jugadores) {
-                writer.write(jugador.toString());
-                writer.newLine();
-            }
-        } catch (IOException e) {
-            System.err.println("Error al guardar los jugadores en el archivo CSV: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Verifica si la cédula está repetida entre los jugadores.
-     *
-     * @param cedula La cédula a verificar.
-     * @return true si la cédula está repetida, false en caso contrario.
-     */
-    public static boolean cedulaRepetida(String cedula) {
-        for (Jugador jugador : jugadores) {
-            if (jugador.getCedula().equals(cedula)) {
-                System.out.println("Error: La cédula ya está registrada para otro jugador.");
-                return true;
-            }
-        }
-        return false;
-    }
-    
-    public static void enviarCartonCorreo(String correoUsuario, String correoDestinatario , int cantidad) {
-        Random aleatorio = new Random();
-        String[] imagenesBingo = new String[cantidad];
-        for (int i=0; i<cantidad; i+=1) {
-            int indiceRandom = aleatorio.nextInt(cartones.size());
-            CartonBingo carton = cartones.get(indiceRandom);
-            cartones.remove(indiceRandom);
-            String ruta="C:\\Users\\User\\OneDrive - Estudiantes ITCR\\Escritorio\\TEC\\POO\\Proyecto1\\Bingo\\Cartones\\" + carton.getCodigoUnico()+".pdf";
-            imagenesBingo[i]= ruta;
-        }
-        CuentaCorreo cuenta = new CuentaCorreo(correoUsuario);
-        cuenta.enviarCorreo(correoDestinatario, "Cartones Bingo", "Se adjuntas las imagenes de los cartones que pediste para el bingo", imagenesBingo);
-    }
-}
-
-/**
- * Esta clase representa un cartón de bingo con un código único y una matriz de
- * números.
- */
-class CartonBingo {
-
-    private final String codigoUnico;
-    private final int[][] numeros;
-    private static int numeroCarton = 0;
-
-    /**
-     * Constructor de la clase CartonBingo.
-     *
-     * @param codigoUnico El código único del cartón.
-     * @param numeros La matriz de números del cartón.
-     */
-    public CartonBingo(String codigoUnico, int[][] numeros) {
-        this.codigoUnico = codigoUnico;
-        this.numeros = numeros;
-        CartonBingo.numeroCarton++;
-    }
-
-    /**
-     * Obtiene el código único del cartón.
-     *
-     * @return El código único del cartón en formato String.
-     */
-    public String getCodigoUnico() {
-        return codigoUnico;
-    }
-
-    /**
-     * Obtiene la matriz de números del cartón.
-     *
-     * @return La matriz de números del cartón.
-     */
-    public int[][] getNumeros() {
-        return numeros;
-    }
-
-    public boolean tieneConfiguracionX() {
-        // Lógica para verificar si el cartón cumple con la configuración X
-        // La configuración X se cumple si se ha marcado al menos un número en cada columna.
-        for (int i = 0; i < 5; i++) {
-            boolean columnaCompleta = true;
-            for (int j = 0; j < 5; j++) {
-                if (numeros[j][i] == 0) {
-                    columnaCompleta = false;
-                    break;
-                }
-            }
-            if (columnaCompleta) {
-                return true; // Se cumple la configuración X
-            }
-        }
-        return false; // No se cumple la configuración X
-    }
-
-    public boolean tieneCuatroEsquinas() {
-        // Lógica para verificar si el cartón cumple con la configuración de Cuatro Esquinas
-        // Cuatro Esquinas se cumple si se han marcado los números en las esquinas.
-        return (numeros[0][0] != 0 && numeros[0][4] != 0 && numeros[4][0] != 0 && numeros[4][4] != 0);
-    }
-
-    public boolean tieneCartonLleno() {
-        // Lógica para verificar si el cartón está lleno
-        // El cartón está lleno si todos los números están marcados.
-        for (int i = 0; i < 5; i++) {
-            for (int j = 0; j < 5; j++) {
-                if (numeros[j][i] == 0) {
-                    return false; // Al menos un número no está marcado
-                }
-            }
-        }
-        return true; // Todos los números están marcados, el cartón está lleno
-    }
-
-    public boolean tieneConfiguracionZ() {
-        // Lógica para verificar si el cartón cumple con la configuración Z
-        // La configuración Z se cumple si se ha marcado al menos un número en todas las filas y columnas excepto la central.
-        for (int i = 0; i < 5; i++) {
-            if (i == 2) {
-                continue; // Saltar la fila central
-            }
-            boolean filaCompleta = true;
-            boolean columnaCompleta = true;
-            for (int j = 0; j < 5; j++) {
-                if (numeros[j][i] == 0) {
-                    filaCompleta = false;
-                }
-                if (numeros[i][j] == 0) {
-                    columnaCompleta = false;
-                }
-            }
-            if (!filaCompleta || !columnaCompleta) {
-                return false; // No se cumple la configuración Z
-            }
-        }
-        return true; // Se cumple la configuración Z
-    }
-
-    /**
-     * Obtiene el número del cartón.
-     *
-     * @return El número del cartón.
-     */
-    public int getNumeroCarton() {
-        return numeroCarton;
-    }
-
-    public boolean tieneNumero(int numeroLlamado) {
-        for (int i = 0; i < 5; i++) {
-            for (int j = 0; j < 5; j++) {
-                if (numeros[j][i] == numeroLlamado) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-}
-
-/**
- * Esta clase representa un jugador con nombre, cédula y correo electrónico.
- */
-class Jugador {
-
-    private final String nombre;
-    private final String cedula;
-    private final String correo;
-
-    /**
-     * Constructor de la clase Jugador.
-     *
-     * @param nombre Nombre completo del jugador.
-     * @param cedula Cédula del jugador.
-     * @param correo Correo electrónico del jugador.
-     */
-    public Jugador(String nombre, String cedula, String correo) {
-        this.nombre = nombre;
-        this.cedula = cedula;
-        this.correo = correo;
-    }
-
-    /**
-     * Obtiene el nombre del jugador.
-     *
-     * @return El nombre del jugador en formato String.
-     */
-    public String getNombre() {
-        return nombre;
-    }
-
-    /**
-     * Obtiene la cédula del jugador.
-     *
-     * @return La cédula del jugador en formato String.
-     */
-    public String getCedula() {
-        return cedula;
-    }
-
-    /**
-     * Obtiene el correo electrónico del jugador.
-     *
-     * @return El correo electrónico del jugador en formato String.
-     */
-    public String getCorreo() {
-        return correo;
-    }
-
-    @Override
-    public String toString() {
-        return nombre + "," + cedula + "," + correo;
-    }
+  /**
+   * Vacía ambas listas con cartones.
+   */
+  public void resetearListasCartones() {
+    cartonesGenerados.clear();
+    cartonesEnviados.clear();
+  }
 }

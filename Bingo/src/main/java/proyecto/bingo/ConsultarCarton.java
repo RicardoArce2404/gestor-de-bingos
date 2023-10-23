@@ -9,8 +9,7 @@ import java.util.ArrayList;
 import javax.swing.table.TableModel;
 
 /**
- *
- * @author usuario
+ * Ventana de consultar cartón
  */
 public class ConsultarCarton extends javax.swing.JFrame {
 

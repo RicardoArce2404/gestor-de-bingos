@@ -195,7 +195,7 @@ public class CantarNumero extends javax.swing.JFrame {
         String mensajeGanador = "¡Bingo!\nCartones ganadores:\n";
         for (CartonBingo carton : cartonesGanadores) {
           mensajeGanador += "• " + carton.getCodigoUnico() + "\n";
-          cartonesXML.concat(carton.getDueño().getCedula()+", ");
+          cartonesXML = cartonesXML.concat(carton.getDueño().getCedula()+", ");
         }
         JOptionPane.showMessageDialog(this, mensajeGanador);
        }

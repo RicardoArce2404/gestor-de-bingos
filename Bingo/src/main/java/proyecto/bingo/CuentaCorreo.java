@@ -23,7 +23,6 @@ import javax.mail.Multipart;
 
 /**
  * Clase que representa una cuenta de correo para enviar mensajes.
- *
  */
 import javax.mail.NoSuchProviderException;import javax.mail.Part;
 /**
